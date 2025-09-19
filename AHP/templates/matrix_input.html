@@ -23,8 +23,18 @@
                 <h2>Đánh Giá Các Tiêu Chí</h2>
                 <div style="overflow:auto">
                     <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% set crit_names = session.get('criteria_names', []) %}
+                                {% for j in range(size) %}
+                                <th>{{ crit_names[j] if j < crit_names|length else 'C' ~ (j + 1) }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
                         {% for i in range(size) %}
                         <tr>
+                            <th>{{ crit_names[i] if i < crit_names|length else 'C' ~ (i + 1) }}</th>
                             {% for j in range(size) %}
                             <td>
                                 {% if i == j %}
