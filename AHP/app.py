@@ -16,6 +16,14 @@ def index():
         criteria_names = [name.strip() for name in criteria_names if name.strip()]
         if not criteria_names:
             return render_template('index.html', error="Vui lòng nhập ít nhất một tiêu chí.")
+        # Reset session for a new flow
+        session.pop('criteria_matrix', None)
+        session.pop('criteria_weights', None)
+        session.pop('consistency_ratio', None)
+        session.pop('house_matrices', None)
+        session.pop('house_names', None)
+        session.pop('house_count', None)
+        session.pop('final_scores', None)
         session['criteria_names'] = criteria_names
         session['criteria_size'] = len(criteria_names)
         session.modified = True
@@ -76,6 +84,9 @@ def matrix_input():
                     value = float(request.form.get(f'value_{i}_{j}', 0))
                     criteria_matrix[i][j] = value
                     criteria_matrix[j][i] = 1 / value if value != 0 else 0
+            # persist the user-entered criteria matrix for later use
+            session['criteria_matrix'] = criteria_matrix
+            session.modified = True
 
         criteria_pairwise_matrix = create_pairwise_matrix(criteria_matrix)
         criteria_cw = calculate_cw(criteria_pairwise_matrix)
@@ -115,6 +126,9 @@ def house_types():
             house_names = [name.strip() for name in house_names_input.split(',') if name.strip()]
             if not house_names:
                 return render_template('house_types.html', error="Vui lòng nhập ít nhất một tên nhà.")
+            # Reset any previous house matrices when setting new house names
+            session.pop('house_matrices', None)
+            session.pop('final_scores', None)
             session['house_names'] = house_names
             session['house_count'] = len(house_names)
             return redirect(url_for('enter_house_matrices'))
@@ -151,6 +165,27 @@ def enter_house_matrices():
         final_scores = [0] * house_count
 
         house_matrices = session.get('house_matrices', [])
+        # If matrices were not uploaded, build them from the submitted form
+        if not house_matrices or len(house_matrices) != len(criteria_names):
+            built_matrices = []
+            for crit_name in criteria_names:
+                size = house_count
+                matrix = [[1 if i == j else 0 for j in range(size)] for i in range(size)]
+                for i in range(size):
+                    for j in range(i + 1, size):
+                        key = f"matrix_{crit_name}_{i}_{j}"
+                        value_str = request.form.get(key, '')
+                        try:
+                            value = float(value_str)
+                            matrix[i][j] = value
+                            matrix[j][i] = 1 / value if value != 0 else 0
+                        except (ValueError, TypeError):
+                            matrix[i][j] = 0
+                            matrix[j][i] = 0
+                built_matrices.append(matrix)
+            house_matrices = built_matrices
+            session['house_matrices'] = house_matrices
+            session.modified = True
         criteria_weights = session.get('criteria_weights', [])
 
         for crit_index, crit_name in enumerate(criteria_names):
@@ -176,7 +211,15 @@ def results():
     final_scores = session.get('final_scores', [])
     sorted_scores = sorted(enumerate(final_scores), key=lambda x: x[1], reverse=True)
     house_names = session.get('house_names', [])
-    consistency_ratio = session.get('consistency_ratio', 0)
+
+    # Recompute consistency ratio from current criteria matrix and weights to avoid staleness
+    criteria_matrix = session.get('criteria_matrix')
+    criteria_weights = session.get('criteria_weights')
+    consistency_ratio = 0
+    if criteria_matrix and criteria_weights:
+        size = len(criteria_matrix)
+        _, consistency_index, _ = calculate_consistency_ratio(criteria_matrix, criteria_weights)
+        consistency_ratio = consistency_index / get_random_consistency(size)
 
     results_with_names = [(house_names[idx], score) for idx, score in sorted_scores]
 

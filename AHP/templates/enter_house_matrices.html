@@ -36,11 +36,11 @@
                             <th>{{ house_names[i] }}</th>
                             {% for j in range(house_count) %}
                             {% if i == j %}
-                            <td><input type="number" name="matrix_{{ crit_name }}_{{ i }}_{{ j }}" value="1" readonly></td>
+                            <td>1</td>
                             {% elif i < j %}
-                            <td><input type="number" name="matrix_{{ crit_name }}_{{ i }}_{{ j }}" value="{{ house_matrices[criteria_names.index(crit_name)][i][j] if house_matrices else '' }}" step="0.01" required></td>
+                            <td><input type="text" name="matrix_{{ crit_name }}_{{ i }}_{{ j }}" data-i="{{ i }}" data-j="{{ j }}" value="{{ house_matrices[criteria_names.index(crit_name)][i][j] if house_matrices else '' }}"></td>
                             {% else %}
-                            <td><input type="number" name="matrix_{{ crit_name }}_{{ j }}_{{ i }}" value="{{ house_matrices[criteria_names.index(crit_name)][j][i] if house_matrices else '' }}" readonly></td>
+                            <td><input type="text" name="matrix_{{ crit_name }}_{{ j }}_{{ i }}" data-i="{{ i }}" data-j="{{ j }}" value="{{ house_matrices[criteria_names.index(crit_name)][j][i] if house_matrices else '' }}" readonly></td>
                             {% endif %}
                             {% endfor %}
                         </tr>
@@ -54,6 +54,36 @@
             </form>
         </div>
     </main>
+    <script>
+    (function() {
+        function toNumber(val) {
+            var num = parseFloat(val);
+            return isFinite(num) ? num : NaN;
+        }
+
+        function format(val) {
+            if (!isFinite(val)) return '';
+            return (Math.round(val * 10000) / 10000).toString();
+        }
+
+        document.addEventListener('input', function(e) {
+            var el = e.target;
+            if (!(el && el.name && el.name.indexOf('matrix_') === 0)) return;
+            var i = el.getAttribute('data-i');
+            var j = el.getAttribute('data-j');
+            if (i === null || j === null) return;
+            if (parseInt(i, 10) >= parseInt(j, 10)) return;
+
+            var v = toNumber(el.value);
+            var reciprocal = v ? 1 / v : NaN;
+            var table = el.closest('table');
+            var mirror = table ? table.querySelector('input[data-i="' + j + '"][data-j="' + i + '"]') : null;
+            if (mirror) {
+                mirror.value = format(reciprocal);
+            }
+        });
+    })();
+    </script>
 </body>
 
 </html>
