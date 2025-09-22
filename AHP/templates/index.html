@@ -1,49 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trang Chủ Bất động sản</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <link
+      rel="icon"
+      type="image/jpg"
+      href="{{ url_for('static', filename='assets/lg.jpg') }}"
+    />
+  </head>
 
-<body>
+  <body>
     <header class="site-header">
-        <div class="container">
-            <div class="brand">
-                <div class="logo"></div>
-                <h1>BẤT ĐỘNG SẢN</h1>
-            </div>
+      <div class="container">
+        <div class="brand">
+          <div class="logo">
+            <img
+              src="{{ url_for('static', filename='assets/lg.jpg') }}"
+              alt="Logo"
+            />
+          </div>
+          <h1>BẤT ĐỘNG SẢN</h1>
         </div>
+      </div>
     </header>
     <main class="stack-lg">
-        <div class="hero">
-            <img src="https://static.homedy.com/src/images/home/bg061020.jpg?v=13" alt="Real estate background">
-            <div class="overlay"></div>
-            <div class="caption">Chào mừng đến công cụ AHP chọn bất động sản</div>
+      <div class="hero">
+        <img
+          src="{{ url_for('static', filename='assets/banner_slider.jpeg') }}"
+          alt="Real estate background"
+        />
+        <div class="overlay"></div>
+        <div class="caption">Chào Mừng Đến Công Cụ AHP Chọn Bất Động Sản</div>
+      </div>
+      <section class="grid cols-2">
+        <div class="card">
+          <h2>Nhập tiêu chí</h2>
+          <form
+            method="post"
+            action="{{ url_for('index') }}"
+            class="form-inline"
+          >
+            <label class="sr-only" for="criteria_names">Tên các tiêu chí</label>
+            <input
+              type="text"
+              id="criteria_names"
+              name="criteria_names"
+              required
+              placeholder="Ví dụ: Giá, Vị trí, Diện tích"
+            />
+            <button type="submit" class="btn">Tiếp tục</button>
+          </form>
         </div>
-        <section class="grid cols-2">
-            <div class="card">
-                <h2>Nhập tiêu chí</h2>
-                <form method="post" action="{{ url_for('index') }}" class="form-inline">
-                    <label class="sr-only" for="criteria_names">Tên các tiêu chí</label>
-                    <input type="text" id="criteria_names" name="criteria_names" required placeholder="Ví dụ: Giá, Vị trí, Diện tích">
-                    <button type="submit" class="btn">Tiếp tục</button>
-                </form>
-            </div>
-            <div class="card">
-                <h2>Tải lên từ Excel</h2>
-                <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="form-inline">
-                    <input type="file" name="file" accept=".xlsx,.xls">
-                    <input type="submit" class="btn" value="Upload">
-                </form>
-            </div>
-        </section>
+        <div class="card">
+          <h2>Tải lên từ Excel</h2>
+          <form
+            action="{{ url_for('upload_file') }}"
+            method="post"
+            enctype="multipart/form-data"
+            class="form-inline"
+          >
+            <input type="file" name="file" accept=".xlsx,.xls" />
+            <input type="submit" class="btn" value="Upload" />
+          </form>
+        </div>
+      </section>
     </main>
     <!-- <footer class="footer">
-        <div class="container muted">© AHP Real Estate</div>
-    </footer> -->
-</body>
-
+          <div class="container muted">© AHP Real Estate</div>
+      </footer> -->
+  </body>
 </html>
